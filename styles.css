@@ -2,6 +2,8 @@
 .pp-game-brand-wordmark-suffix{color:#333!important;font-weight:500!important;margin-left:0}
 .pp-game-link[data-game="wordprofinder"] b{color:#000;min-width:27px;font-size:.57rem}
 .pp-game-header{display:block!important}
+.pp-preplay-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:52px;margin:0 0 20px;padding:12px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;box-sizing:border-box;color:#1e40af;font-size:.85rem;line-height:1.35}.pp-preplay-message{flex:1}.pp-preplay-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}.pp-preplay-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:5px 10px;border-radius:6px;font-size:.75rem;font-weight:700;text-decoration:none;white-space:nowrap}.pp-preplay-primary{background:var(--pp-accent);color:#fff}.pp-preplay-secondary{border:1px solid #93c5fd;background:#fff;color:#1e40af}@media(max-width:560px){.pp-preplay-banner{align-items:stretch;flex-direction:column;text-align:center}.pp-preplay-actions{justify-content:center}.pp-preplay-actions a{flex:1}}
+.pp-leaderboard-footer{padding:4px 0 8px;color:#8a948c;font-size:.78rem;text-align:center}
 .pp-date-selector{margin-top:16px!important}
 .pp-game-brand-badge{box-sizing:border-box!important;width:36px!important;height:36px!important;min-width:36px!important;max-width:36px!important;min-height:36px!important;max-height:36px!important;flex:0 0 36px!important;font-size:1rem!important;line-height:1!important}
 .pp-game-link{width:60px;min-width:60px;max-width:60px;flex:0 0 60px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -11,3 +13,6 @@
 .pp-leaderboard-page{min-height:100vh;background:#f4f4f4;padding:32px 16px 50px;box-sizing:border-box}
 .pp-leaderboard-container{width:100%;max-width:680px;margin:0 auto}
 @media(max-width:480px){.pp-leaderboard-page{padding-top:20px}}
+.pp-preplay-banner{height:72px;min-height:72px}
+.pp-preplay-actions a{width:96px;height:32px;min-height:32px;padding:0;box-sizing:border-box;line-height:1}
+@media(max-width:560px){.pp-preplay-banner{height:108px;min-height:108px;justify-content:center}.pp-preplay-message{flex:0 0 auto}.pp-preplay-actions{width:100%;max-width:208px}.pp-preplay-actions a{flex:1 1 0}}

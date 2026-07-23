@@ -19,11 +19,12 @@ function GameBrand({ game, size = 'header', markOnly = false, className = '' }) 
   );
 }
 
-function GameHeader({ game, links = [], homeHref, homeLabel = 'Home', title = '' }) {
+function GameHeader({ game, links = [], currentGameKey, homeHref, homeLabel = 'Home', title = '' }) {
+  const visibleLinks = currentGameKey ? links.filter((link) => link.key !== currentGameKey) : links;
   return h('header', { className: 'pp-game-header', style: { '--pp-accent': game.accent } },
     h('div', { className: 'pp-game-header-top' }, h(GameBrand, { game, size: 'header' }), title && h('h1', null, title)),
     h('nav', { className: 'pp-game-header-links', 'aria-label': 'Games' },
-      links.map((link) => h('a', { key: link.key, href: link.href, className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
+      visibleLinks.map((link) => h('a', { key: link.key, href: link.href, className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
         h('b', null, link.letter), h('span', null, link.played ? 'LB' : 'Play')
       )),
       h('a', { className: 'pp-game-home-link', href: homeHref }, homeLabel)
@@ -40,6 +41,20 @@ function DateSelector({ dateLabel, onPrevious, onNext, onToday, showToday = fals
   );
 }
 
+function PrePlayBanner({ game, playHref, howToPlayHref }) {
+  return h('div', { className: 'pp-preplay-banner', style: { '--pp-accent': game.accent } },
+    h('div', { className: 'pp-preplay-message' }, h('strong', null, '🔒 Today\'s results are hidden until you play.')),
+    h('div', { className: 'pp-preplay-actions' },
+      playHref && h('a', { className: 'pp-preplay-primary', href: playHref }, 'Play Now'),
+      howToPlayHref && h('a', { className: 'pp-preplay-secondary', href: howToPlayHref }, 'How to Play')
+    )
+  );
+}
+
+function LeaderboardFooter() {
+  return h('footer', { className: 'pp-leaderboard-footer' }, 'PrecisionPros Games');
+}
+
 function LeaderboardPanel({ game, subtitle, dateSelector, children }) {
   return h('section', { className: 'pp-leaderboard-panel' },
     h('p', { className: 'pp-leaderboard-subtitle' }, subtitle),
@@ -48,14 +63,16 @@ function LeaderboardPanel({ game, subtitle, dateSelector, children }) {
   );
 }
 
-function LeaderboardFrame({ game, title = 'Leaderboard', links = [], homeHref, dateSelector, children }) {
-  return h('main', { className: 'pp-leaderboard-page' },
+function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGameKey, homeHref, dateSelector, showPrePlayBanner = false, playHref, howToPlayHref, children }) {
+  return h('main', { className: 'pp-leaderboard-page', style: { '--pp-accent': game.accent } },
     h('div', { className: 'pp-leaderboard-container' },
-      h(GameHeader, { game, title, links, homeHref }),
+      h(GameHeader, { game, title, links, currentGameKey, homeHref }),
       dateSelector,
-      children
+      showPrePlayBanner && h(PrePlayBanner, { game, playHref, howToPlayHref }),
+      children,
+      h(LeaderboardFooter)
     )
   );
 }
 
-module.exports = { GameBrand, GameHeader, DateSelector, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate };
+module.exports = { GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate };
