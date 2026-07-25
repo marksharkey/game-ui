@@ -51,6 +51,25 @@ function PrePlayBanner({ game, playHref, howToPlayHref }) {
   );
 }
 
+function AlreadyPlayedPage({ game, title = 'You already played today!', message = 'Come back tomorrow for a new puzzle.', detail = '', icon = '✅', leaderboardHref, homeHref }) {
+  return h('main', { className: 'pp-status-page', style: { '--pp-accent': game.accent } },
+    h('div', { className: 'pp-status-container' },
+      h('section', { className: 'pp-status-card' },
+        h(GameBrand, { game, size: 'header' }),
+        h('div', { className: 'pp-status-message' },
+          h('h1', null, h('span', { className: 'pp-status-icon', 'aria-hidden': 'true' }, icon), title),
+          message && h('p', null, message),
+          detail && h('p', { className: 'pp-status-detail' }, detail),
+          h('div', { className: 'pp-status-actions' },
+            leaderboardHref && h('a', { className: 'pp-status-primary', href: leaderboardHref }, 'View Leaderboard'),
+            homeHref && h('a', { className: 'pp-status-secondary', href: homeHref }, 'Home')
+          )
+        )
+      )
+    )
+  );
+}
+
 function LeaderboardFooter() {
   return h('footer', { className: 'pp-leaderboard-footer' }, 'PrecisionPros Games');
 }
@@ -75,4 +94,4 @@ function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGame
   );
 }
 
-module.exports = { GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate };
+module.exports = { AlreadyPlayedPage, GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate };
