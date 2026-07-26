@@ -15,6 +15,33 @@ function hubHeaders() {
   return token ? { 'X-Hub-Token': token } : {};
 }
 
+function hubStatusUrl() {
+  if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_HUB_API_URL) {
+    return `${process.env.REACT_APP_HUB_API_URL.replace(/\/$/, '')}/games/status/`;
+  }
+  const local = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  return local ? 'http://127.0.0.1:8000/api/games/status/' : 'https://games.precisionpros.com/api/games/status/';
+}
+
+async function fetchGameStatuses() {
+  const response = await fetch(hubStatusUrl(), { headers: hubHeaders() });
+  if (!response.ok) throw new Error(`Game status request failed: ${response.status}`);
+  const data = await response.json();
+  return Object.fromEntries(Object.entries(data.games || {}).map(([key, value]) => [key, value.played === true]));
+}
+
+function withHubToken(href) {
+  const token = getHubToken();
+  if (!token || !href) return href;
+  try {
+    const url = new URL(href, window.location.origin);
+    if (!url.searchParams.has('hub_token')) url.searchParams.set('hub_token', token);
+    return url.toString();
+  } catch {
+    return href;
+  }
+}
+
 async function fetchHasPlayedToday(endpoint, playerName = '') {
   const url = new URL(endpoint, window.location.origin);
   if (playerName) url.searchParams.set('player_name', playerName);
@@ -46,8 +73,8 @@ function GameHeader({ game, links = [], currentGameKey, homeHref, homeLabel = 'H
   return h('header', { className: 'pp-game-header', style: { '--pp-accent': game.accent } },
     h('div', { className: 'pp-game-header-top' }, h(GameBrand, { game, size: 'header' }), title && h('h1', null, title)),
     h('nav', { className: 'pp-game-header-links', 'aria-label': 'Games' },
-      visibleLinks.map((link) => h('a', { key: link.key, href: link.href, className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
-        h('b', null, link.letter), h('span', null, link.played ? 'LB' : 'Play')
+      visibleLinks.map((link) => h('a', { key: link.key, href: withHubToken(link.href), className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
+        h('b', null, link.letter), h('span', null, link.played === true ? 'LB' : 'Play')
       )),
       h('a', { className: 'pp-game-home-link', href: homeHref }, homeLabel)
     )
@@ -116,4 +143,4 @@ function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGame
   );
 }
 
-module.exports = { AlreadyPlayedPage, GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate, getHubToken, hubHeaders, fetchHasPlayedToday };
+module.exports = { AlreadyPlayedPage, GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate, getHubToken, hubHeaders, fetchHasPlayedToday, fetchGameStatuses };
