@@ -3,6 +3,28 @@ require('./styles.css');
 
 const h = React.createElement;
 
+function getHubToken() {
+  if (typeof window === 'undefined') return '';
+  const token = new URLSearchParams(window.location.search).get('hub_token') || localStorage.getItem('hubToken') || '';
+  if (token) localStorage.setItem('hubToken', token);
+  return token;
+}
+
+function hubHeaders() {
+  const token = getHubToken();
+  return token ? { 'X-Hub-Token': token } : {};
+}
+
+async function fetchHasPlayedToday(endpoint, playerName = '') {
+  const url = new URL(endpoint, window.location.origin);
+  if (playerName) url.searchParams.set('player_name', playerName);
+  const response = await fetch(url.toString(), { headers: hubHeaders() });
+  if (!response.ok) throw new Error(`Play status request failed: ${response.status}`);
+  const data = await response.json();
+  const played = data.has_played_today !== undefined ? data.has_played_today : (data.has_played !== undefined ? data.has_played : data.played);
+  return typeof played === 'boolean' ? played : undefined;
+}
+
 function formatLeaderboardDate(value) {
   if (!value) return 'Today';
   return new Date(`${value}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
@@ -94,4 +116,4 @@ function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGame
   );
 }
 
-module.exports = { AlreadyPlayedPage, GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate };
+module.exports = { AlreadyPlayedPage, GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate, getHubToken, hubHeaders, fetchHasPlayedToday };
