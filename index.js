@@ -60,7 +60,7 @@ function formatLeaderboardDate(value) {
 function GameBrand({ game, size = 'header', markOnly = false, className = '' }) {
   return h('div', { className: `pp-game-brand pp-game-brand-${size} ${markOnly ? 'pp-game-brand-mark-only' : ''} ${className}`.trim(), style: { '--pp-accent': game.accent } },
     h('div', { className: 'pp-game-brand-badge', style: { color: game.badgeColor || '#fff' } }, game.badge),
-    !markOnly && h('div', { className: 'pp-game-brand-wordmark' },
+    !markOnly && h('div', { className: `pp-game-brand-wordmark${game.wordmarkSuffix ? ' pp-game-brand-wordmark-has-suffix' : ''}` },
       h('span', null, game.wordmarkMain || game.name),
       h('span', null, game.wordmarkAccent || 'Pro'),
       game.wordmarkSuffix && h('span', { className: 'pp-game-brand-wordmark-suffix' }, game.wordmarkSuffix)
