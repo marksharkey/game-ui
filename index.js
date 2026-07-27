@@ -20,7 +20,7 @@ function hubStatusUrl() {
     return `${process.env.REACT_APP_HUB_API_URL.replace(/\/$/, '')}/games/status/`;
   }
   const local = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  return local ? 'http://127.0.0.1:8000/api/games/status/' : 'https://games.precisionpros.com/api/games/status/';
+  return local ? 'http://127.0.0.1:8000/api/games/context/' : 'https://games.precisionpros.com/api/games/context/';
 }
 
 async function fetchGameStatuses() {
