@@ -76,7 +76,7 @@ function GameHeader({ game, links = [], currentGameKey, homeHref, homeLabel = 'H
       visibleLinks.map((link) => h('a', { key: link.key, href: withHubToken(link.href), className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
         h('b', null, link.letter), h('span', null, link.played === true ? 'LB' : 'Play')
       )),
-      h('a', { className: 'pp-game-home-link', href: homeHref }, homeLabel)
+      h('a', { className: 'pp-game-home-link', href: withHubToken(homeHref) }, homeLabel)
     )
   );
 }
@@ -111,7 +111,7 @@ function AlreadyPlayedPage({ game, title = 'You already played today!', message 
           detail && h('p', { className: 'pp-status-detail' }, detail),
           h('div', { className: 'pp-status-actions' },
             leaderboardHref && h('a', { className: 'pp-status-primary', href: leaderboardHref }, 'View Leaderboard'),
-            homeHref && h('a', { className: 'pp-status-secondary', href: homeHref }, 'Home')
+            homeHref && h('a', { className: 'pp-status-secondary', href: withHubToken(homeHref) }, 'Home')
           )
         )
       )
