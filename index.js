@@ -131,10 +131,10 @@ function LeaderboardPanel({ game, subtitle, dateSelector, children }) {
   );
 }
 
-function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGameKey, homeHref, dateSelector, showPrePlayBanner = false, playHref, howToPlayHref, children }) {
+function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGameKey, homeHref, homeLabel = 'Home', dateSelector, showPrePlayBanner = false, playHref, howToPlayHref, children }) {
   return h('main', { className: 'pp-leaderboard-page', style: { '--pp-accent': game.accent } },
     h('div', { className: 'pp-leaderboard-container' },
-      h(GameHeader, { game, title, links, currentGameKey, homeHref }),
+      h(GameHeader, { game, title, links, currentGameKey, homeHref, homeLabel }),
       dateSelector,
       showPrePlayBanner && h(PrePlayBanner, { game, playHref, howToPlayHref }),
       children,
