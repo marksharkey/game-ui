@@ -68,14 +68,16 @@ function GameBrand({ game, size = 'header', markOnly = false, className = '' }) 
   );
 }
 
-function GameHeader({ game, links = [], currentGameKey, homeHref, homeLabel = 'Home', title = '' }) {
+function GameHeader({ game, links = [], currentGameKey, homeHref, homeLabel = '← Games Hub', title = '' }) {
   const visibleLinks = currentGameKey ? links.filter((link) => link.key !== currentGameKey) : links;
   return h('header', { className: 'pp-game-header', style: { '--pp-accent': game.accent } },
     h('div', { className: 'pp-game-header-top' }, h(GameBrand, { game, size: 'header' }), title && h('h1', null, title)),
     h('nav', { className: 'pp-game-header-links', 'aria-label': 'Games' },
       visibleLinks.map((link) => h('a', { key: link.key, href: withHubToken(link.href), className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
         h('b', null, link.letter), h('span', null, link.played === true ? 'LB' : 'Play')
-      )),
+      ))
+    ),
+    homeHref && h('div', { className: 'pp-game-header-home' },
       h('a', { className: 'pp-game-home-link', href: withHubToken(homeHref) }, homeLabel)
     )
   );
@@ -131,7 +133,7 @@ function LeaderboardPanel({ game, subtitle, dateSelector, children }) {
   );
 }
 
-function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGameKey, homeHref, homeLabel = 'Home', dateSelector, showPrePlayBanner = false, playHref, howToPlayHref, children }) {
+function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGameKey, homeHref, homeLabel = '← Games Hub', dateSelector, showPrePlayBanner = false, playHref, howToPlayHref, children }) {
   return h('main', { className: 'pp-leaderboard-page', style: { '--pp-accent': game.accent } },
     h('div', { className: 'pp-leaderboard-container' },
       h(GameHeader, { game, title, links, currentGameKey, homeHref, homeLabel }),
