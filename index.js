@@ -68,18 +68,74 @@ function GameBrand({ game, size = 'header', markOnly = false, className = '' }) 
   );
 }
 
-function GameHeader({ game, links = [], currentGameKey, homeHref, homeLabel = '← Games Hub', title = '' }) {
-  const visibleLinks = currentGameKey ? links.filter((link) => link.key !== currentGameKey) : links;
-  return h('header', { className: 'pp-game-header', style: { '--pp-accent': game.accent } },
-    h('div', { className: 'pp-game-header-top' }, h(GameBrand, { game, size: 'header' }), title && h('h1', null, title)),
+function hubContextUrl() {
+  const configured = typeof process !== 'undefined' && process.env && process.env.REACT_APP_HUB_API_URL;
+  if (configured) return `${configured.replace(/\/$/, '')}/games/context/`;
+  return hubStatusUrl().replace(/games\/status\/$/, 'games/context/');
+}
+
+function useHubGameLinks({ contextUrl = hubContextUrl(), currentGameKey, playerName = '' } = {}) {
+  const [context, setContext] = React.useState(null);
+  const [failed, setFailed] = React.useState(false);
+  React.useEffect(() => {
+    let active = true;
+    let controller;
+    const refresh = async () => {
+      if (controller) controller.abort();
+      controller = new AbortController();
+      try {
+        const response = await fetch(contextUrl, { headers: hubHeaders(), signal: controller.signal });
+        if (!response.ok) throw new Error(`Game context request failed: ${response.status}`);
+        const data = await response.json();
+        if (active) { setContext(data.games || {}); setFailed(false); }
+      } catch (error) {
+        if (active && error.name !== 'AbortError') { setContext(null); setFailed(true); }
+      }
+    };
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    refresh();
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisible);
+    const timer = window.setInterval(refresh, 60000);
+    return () => {
+      active = false;
+      if (controller) controller.abort();
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [contextUrl]);
+  const links = Object.values(context || {}).filter((entry) => {
+    if (entry.key === currentGameKey) return false;
+    try { return new URL(entry.play_url).origin !== window.location.origin; } catch { return false; }
+  }).map((entry) => {
+    const played = entry.leaderboard_ready === true;
+    const target = new URL(played ? entry.leaderboard_url : entry.play_url);
+    if (playerName) target.searchParams.set('player_name', playerName);
+    return { key: entry.key, letter: entry.badge, color: entry.accent, played, href: withHubToken(target.toString()) };
+  });
+  return { links, ready: context !== null, failed };
+}
+
+function HubGameShortcuts({ currentGameKey, contextUrl, playerName = '', homeHref, homeLabel = '← Games Hub' }) {
+  const { links, failed } = useHubGameLinks({ contextUrl, currentGameKey, playerName });
+  return h(React.Fragment, null,
     h('nav', { className: 'pp-game-header-links', 'aria-label': 'Games' },
-      visibleLinks.map((link) => h('a', { key: link.key, href: withHubToken(link.href), className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
-        h('b', null, link.letter), h('span', null, link.played === true ? 'LB' : 'Play')
-      ))
+      links.map((link) => h('a', { key: link.key, href: link.href, className: 'pp-game-link', 'data-game': link.key, style: { '--pp-link-color': link.color } },
+        h('b', null, link.letter), h('span', null, link.played ? 'LB' : 'Play')
+      )),
+      failed && h('span', { role: 'status' }, 'Game shortcuts unavailable. Open Games Hub to continue.')
     ),
     homeHref && h('div', { className: 'pp-game-header-home' },
       h('a', { className: 'pp-game-home-link', href: withHubToken(homeHref) }, homeLabel)
     )
+  );
+}
+
+function GameHeader({ game, currentGameKey, homeHref, homeLabel = '← Games Hub', title = '', contextUrl }) {
+  return h('header', { className: 'pp-game-header', style: { '--pp-accent': game.accent } },
+    h('div', { className: 'pp-game-header-top' }, h(GameBrand, { game, size: 'header' }), title && h('h1', null, title)),
+    h(HubGameShortcuts, { currentGameKey: currentGameKey || game.key, homeHref, homeLabel, contextUrl })
   );
 }
 
@@ -145,4 +201,4 @@ function LeaderboardFrame({ game, title = 'Leaderboard', links = [], currentGame
   );
 }
 
-module.exports = { AlreadyPlayedPage, GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate, getHubToken, hubHeaders, fetchHasPlayedToday, fetchGameStatuses };
+module.exports = { HubGameShortcuts, useHubGameLinks, AlreadyPlayedPage, GameBrand, GameHeader, DateSelector, PrePlayBanner, LeaderboardFooter, LeaderboardPanel, LeaderboardFrame, formatLeaderboardDate, getHubToken, hubHeaders, fetchHasPlayedToday, fetchGameStatuses };
