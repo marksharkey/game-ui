@@ -24,9 +24,7 @@ function hubStatusUrl() {
 }
 
 async function fetchGameStatuses() {
-  const response = await fetch(hubStatusUrl(), { headers: hubHeaders() });
-  if (!response.ok) throw new Error(`Game status request failed: ${response.status}`);
-  const data = await response.json();
+  const data = await fetchHubContext();
   return Object.fromEntries(Object.entries(data.games || {}).map(([key, value]) => [key, value.played === true]));
 }
 
@@ -74,19 +72,34 @@ function hubContextUrl() {
   return hubStatusUrl().replace(/games\/status\/$/, 'games/context/');
 }
 
+// Only share requests while in flight. Completed data is never reused across a
+// new request, so returning after a solve cannot keep an old Play/LB decision.
+const contextRequests = new Map();
+function fetchHubContext(contextUrl = hubContextUrl()) {
+  const url = new URL(contextUrl, window.location.origin);
+  url.searchParams.set('shortcuts', '1');
+  const requestUrl = url.toString();
+  const headers = hubHeaders();
+  const key = `${requestUrl}|${headers['X-Hub-Token'] || ''}`;
+  if (!contextRequests.has(key)) {
+    const request = Promise.resolve().then(() => fetch(requestUrl, { headers }))
+      .then(async response => {
+        if (!response.ok) throw new Error(`Game context request failed: ${response.status}`);
+        return response.json();
+      }).finally(() => contextRequests.delete(key));
+    contextRequests.set(key, request);
+  }
+  return contextRequests.get(key);
+}
+
 function useHubGameLinks({ contextUrl = hubContextUrl(), currentGameKey, playerName = '' } = {}) {
   const [context, setContext] = React.useState(null);
   const [failed, setFailed] = React.useState(false);
   React.useEffect(() => {
     let active = true;
-    let controller;
     const refresh = async () => {
-      if (controller) controller.abort();
-      controller = new AbortController();
       try {
-        const response = await fetch(contextUrl, { headers: hubHeaders(), signal: controller.signal });
-        if (!response.ok) throw new Error(`Game context request failed: ${response.status}`);
-        const data = await response.json();
+        const data = await fetchHubContext(contextUrl);
         if (active) { setContext(data.games || {}); setFailed(false); }
       } catch (error) {
         if (active && error.name !== 'AbortError') { setContext(null); setFailed(true); }
@@ -99,7 +112,6 @@ function useHubGameLinks({ contextUrl = hubContextUrl(), currentGameKey, playerN
     const timer = window.setInterval(refresh, 60000);
     return () => {
       active = false;
-      if (controller) controller.abort();
       window.clearInterval(timer);
       window.removeEventListener('focus', refresh);
       document.removeEventListener('visibilitychange', onVisible);

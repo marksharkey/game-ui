@@ -27,3 +27,9 @@ shortcut component/header. The Hub token is retained on every destination.
 The current game is excluded by key and origin. Context refreshes on return to
 the page and every minute; unavailable context leaves Home available and shows
 an explicit message instead of guessing status from local data.
+
+v0.3.1 requests `games/context/?shortcuts=1`: the Hub returns the same registry
+and authoritative daily state, including live-status fallback, while omitting
+unrelated honors and leaderboard calculations. Status consumers and headers
+share in-flight requests per URL and authentication token. Responses are not
+kept in a client cache, so a new request after completion sees current state.
